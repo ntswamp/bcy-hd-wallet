@@ -1,0 +1,11 @@
+package main
+
+const (
+	BLOCKCYPHER_TOKEN = "8e15ce9c547e469186b4b93056cd561f"
+
+	WALLET_CREATION_ADDR = "Bu6iBE1E25sCzw6X3ngwYoS9oKjjoDZYkG"
+
+	OPPONENT_WALLET_CREATION_ADDR = "CCMUbCHrpj1o15qqBBxixgswqFogpy7iLj"
+
+	CROSSLINK_WALLET = "crosslink-wallet"
+)
