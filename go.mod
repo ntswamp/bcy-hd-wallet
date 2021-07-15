@@ -1,4 +1,4 @@
-module github.com/ntswamp/blockcypher-wallet
+module github.com/ntswamp/bcy-hd-wallet
 
 go 1.15
 
