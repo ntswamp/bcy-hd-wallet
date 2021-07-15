@@ -14,6 +14,11 @@ var (
 
 	buyer_addr = "C5yS3pPG2E5Wfx5uzx5ibWvZxX17uFe1dG"
 	buyer_pub  = "02079cff4199262f6bf8e1993b4fc2c65ab525a36c542940ee7e879adb2127bf01"
+
+	faucet_use_addr = "CBzyZEAGmRaxmapYEhErX4kMrN93iaFq5v"
+	faucet_private  = "8b92199b665a1f23130f8a40dfc499d82859adf094ef957d17070890627858bb"
+	faucet_public   = "03927e6938c23985fa6ade83a6a778e718552632ac298659d8f2a85dd8556a353a"
+	faucet_wif      = "Bt1LZERbcwLpLTfDUWm4jnZpn4FrntqEgdVUjTqmidos4AMaB7Hj"
 )
 
 func main() {
