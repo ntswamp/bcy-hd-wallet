@@ -8,23 +8,49 @@ import (
 	"github.com/wemeetagain/go-hdwallet"
 )
 
+var (
+	seller_addr = "CAidSjXaJEgXJhKvdQ6CE9qEMBkZCmtycC"
+	seller_pub  = "03381be444b91ca55d2ff7074e2d36650ea040e1bc1c05b9ea48ff39be57c95198"
+
+	buyer_addr = "C5yS3pPG2E5Wfx5uzx5ibWvZxX17uFe1dG"
+	buyer_pub  = "02079cff4199262f6bf8e1993b4fc2c65ab525a36c542940ee7e879adb2127bf01"
+)
+
 func main() {
-	//get blockchian
+
+	//get blockchian client
 	bcy := gobcy.API{Token: BLOCKCYPHER_TOKEN, Coin: "bcy", Chain: "test"}
-	wallet, _, err := create_hd_wallet(bcy, "tokenlink-hd-wallet")
-	if err != nil {
-		println(err.Error())
-	}
 
-	fmt.Printf("wallet created:%+v\nxPub:%s\n", wallet.Name, wallet.ExtPubKey)
+	/*
+		wallet, _, xpri, err := create_hd_wallet(bcy, COMPANY_WALLET)
+		if err != nil {
+			println(err.Error())
+		}
 
-	//list all wallets by token
-	walletNames, _ := bcy.ListWallets()
-	fmt.Printf("Wallets:%v\n", walletNames)
+		fmt.Printf("wallet created:%+v\n", wallet)
+		fmt.Printf("xpri:%+v\n", xpri)
+	*/
+
+	/*
+		//list all wallets by token
+		walletNames, _ := bcy.ListWallets()
+		fmt.Printf("Wallets:%v\n", walletNames)
+
+		//hdwallet
+		wallet, _ := bcy.GetAddrHDWallet(COMPANY_WALLET, nil)
+		fmt.Printf("Wallet: %+v\n", wallet)
+
+		derived_wallet, _ := bcy.DeriveAddrHDWallet(COMPANY_WALLET, map[string]string{"count": "1"})
+		fmt.Printf("Wallet: %+v\n", derived_wallet)
+
+		//hdwallet
+		wallet, _ = bcy.GetAddrHDWallet(COMPANY_WALLET, nil)
+		fmt.Printf("Wallet: %+v\n", wallet)
+	*/
 
 	/*
 		//delete wallet
-		err = bcy.DeleteHDWallet("tokenlink-hd-wallet")
+		err := bcy.DeleteHDWallet(COMPANY_WALLET)
 		if err != nil {
 			fmt.Println(err)
 		} else {
@@ -35,15 +61,17 @@ func main() {
 }
 
 // return xpub
-func create_hd_wallet(client gobcy.API, wallet_name string) (wallet gobcy.HDWallet, xpub string, err error) {
+func create_hd_wallet(client gobcy.API, wallet_name string) (wallet gobcy.HDWallet, xpub string, xpri string, err error) {
 	// Generate a random 256 bit seed
 	seed, _ := hdwallet.GenSeed(256)
 	// Create a master private key
 	masterprv := hdwallet.MasterKey(seed)
 	// Convert master private key to public key
 	masterpub := masterprv.Pub()
+
 	//stringify xpub key
 	xpub = masterpub.String()
+	xpri = masterprv.String()
 
 	wallet, err = client.CreateHDWallet(gobcy.HDWallet{Name: wallet_name, ExtPubKey: xpub})
 	if err != nil {
@@ -53,6 +81,16 @@ func create_hd_wallet(client gobcy.API, wallet_name string) (wallet gobcy.HDWall
 	return
 }
 
+func derive_payment_address_from_wallet(client gobcy.API, wallet_name string) (string, error) {
+	derived_wallet, err := client.DeriveAddrHDWallet(wallet_name, map[string]string{"count": "1"})
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Printf("Parital HD Wallet: %+v\n", derived_wallet)
+	return "", nil
+
+}
+
 func handlePurchase(bcy gobcy.API, writer http.ResponseWriter, request *http.Request) {
 	query := request.URL.Query()
 
@@ -60,7 +98,7 @@ func handlePurchase(bcy gobcy.API, writer http.ResponseWriter, request *http.Req
 
 	fmt.Printf("GET: id=%s\n", id)
 
-	wa, addr, err := bcy.GenAddrWallet(CROSSLINK_WALLET)
+	wa, addr, err := bcy.GenAddrWallet(COMPANY_WALLET)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -71,12 +109,12 @@ func handlePurchase(bcy gobcy.API, writer http.ResponseWriter, request *http.Req
 }
 
 func CollectBalance(bcy gobcy.API) {
-	waAddr, err := bcy.GetAddrBal(CROSSLINK_WALLET, nil)
+	waAddr, err := bcy.GetAddrBal(COMPANY_WALLET, nil)
 	if err != nil {
 		fmt.Println(err)
 	}
 	fmt.Printf("%+v\n", waAddr.Balance)
-	//input:= {inputs:[{"wallet_name":CROSSLINK_WALLET, "wallet_token":BLOCKCYPHER_TOKEN}], value: waAddr.Balance.Int64()}
+	//input:= {inputs:[{"wallet_name":COMPANY_WALLET, "wallet_token":BLOCKCYPHER_TOKEN}], value: waAddr.Balance.Int64()}
 
 	//bcy.NewTX()
 }

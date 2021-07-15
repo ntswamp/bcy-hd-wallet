@@ -7,5 +7,6 @@ const (
 
 	OPPONENT_WALLET_CREATION_ADDR = "CCMUbCHrpj1o15qqBBxixgswqFogpy7iLj"
 
-	CROSSLINK_WALLET = "crosslink-wallet"
+	COMPANY_WALLET                    = "tokenlink-hd-wallet"
+	COMPANY_WALLET_MASTER_PRIVATE_KEY = "xprv9s21ZrQH143K2EC8nTgMeHovgFwf2sGCtX9suNqRXh42DL4Xcvtb17fByNKbrRw22YW54KFbAkYDymXGtoRkVAydjEHHcgP2VmMQDNcBcTb"
 )
