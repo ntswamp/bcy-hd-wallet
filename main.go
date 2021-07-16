@@ -25,42 +25,80 @@ func main() {
 
 	//get blockchian client
 	bcy := gobcy.API{Token: BLOCKCYPHER_TOKEN, Coin: "bcy", Chain: "test"}
+	/**************FAUCET***************
+	faucet_addr := gobcy.AddrKeychain{
+		Address: "CBzyZEAGmRaxmapYEhErX4kMrN93iaFq5v",
+		Private: "8b92199b665a1f23130f8a40dfc499d82859adf094ef957d17070890627858bb",
+		Public:  "03927e6938c23985fa6ade83a6a778e718552632ac298659d8f2a85dd8556a353a",
+		Wif:     "Bt1LZERbcwLpLTfDUWm4jnZpn4FrntqEgdVUjTqmidos4AMaB7Hj",
+	}
+
+	_, err := bcy.Faucet(faucet_addr, 1)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	***************/
+
+	///****check balance****
+	addr, err := bcy.GetAddrBal(buyer_addr, nil)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Printf("%+v\n", addr)
 
 	/*
-		wallet, _, xpri, err := create_hd_wallet(bcy, COMPANY_WALLET)
+		//Post New TXSkeleton
+		skel, err := bcy.NewTX(gobcy.TempNewTX(faucet_use_addr, buyer_addr, *big.NewInt(190)), false)
 		if err != nil {
-			println(err.Error())
+			fmt.Println(err)
 		}
-
-		fmt.Printf("wallet created:%+v\n", wallet)
-		fmt.Printf("xpri:%+v\n", xpri)
+		//Sign it locally
+		err = skel.Sign([]string{faucet_private})
+		if err != nil {
+			fmt.Println(err)
+		}
+		//Send TXSkeleton
+		skel, err = bcy.SendTX(skel)
+		if err != nil {
+			fmt.Println(err)
+		}
+		fmt.Printf("%+v\n", skel)
 	*/
 
 	/*
+			wallet, _, xpri, err := create_hd_wallet(bcy, COMPANY_WALLET)
+			if err != nil {
+				println(err.Error())
+			}
+
+			fmt.Printf("wallet created:%+v\n", wallet)
+			fmt.Printf("xpri:%+v\n", xpri)
+
+
 		//list all wallets by token
 		walletNames, _ := bcy.ListWallets()
 		fmt.Printf("Wallets:%v\n", walletNames)
+
+			//hdwallet
+			wallet, _ := bcy.GetAddrHDWallet(COMPANY_WALLET, nil)
+			fmt.Printf("Wallet: %+v\n", wallet)
+
+			derived_wallet, _ := bcy.DeriveAddrHDWallet(COMPANY_WALLET, map[string]string{"count": "1"})
+			fmt.Printf("Wallet: %+v\n", derived_wallet)
 
 		//hdwallet
 		wallet, _ := bcy.GetAddrHDWallet(COMPANY_WALLET, nil)
 		fmt.Printf("Wallet: %+v\n", wallet)
 
-		derived_wallet, _ := bcy.DeriveAddrHDWallet(COMPANY_WALLET, map[string]string{"count": "1"})
-		fmt.Printf("Wallet: %+v\n", derived_wallet)
 
-		//hdwallet
-		wallet, _ = bcy.GetAddrHDWallet(COMPANY_WALLET, nil)
-		fmt.Printf("Wallet: %+v\n", wallet)
-	*/
-
-	/*
-		//delete wallet
-		err := bcy.DeleteHDWallet(COMPANY_WALLET)
-		if err != nil {
-			fmt.Println(err)
-		} else {
-			fmt.Println("Wallet Deleted")
-		}
+			//delete wallet
+			err := bcy.DeleteHDWallet(COMPANY_WALLET)
+			if err != nil {
+				fmt.Println(err)
+			} else {
+				fmt.Println("Wallet Deleted")
+			}
 	*/
 
 }
