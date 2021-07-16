@@ -1,3 +1,15 @@
+/**
+ * 
+ * This sample demonstrates the creation, signature and sending of
+ * a simple Bitcoin transaction from the source address, the target address and amount.
+ * For more details see the reference documentation.
+ * To run the same sample using the command line (curl), see this gist
+ * Click the button below to start a transfer from one of our test addresses to a randomly generated one.
+ * See below for the complete source code.
+ * 
+ */
+ 
+
 var bitcoin = require("bitcoinjs-lib");
 var bigi    = require("bigi");
 var buffer  = require('buffer');

@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math/big"
 	"net/http"
 
 	"github.com/blockcypher/gobcy"
@@ -25,46 +26,44 @@ func main() {
 
 	//get blockchian client
 	bcy := gobcy.API{Token: BLOCKCYPHER_TOKEN, Coin: "bcy", Chain: "test"}
-	/**************FAUCET***************
-	faucet_addr := gobcy.AddrKeychain{
-		Address: "CBzyZEAGmRaxmapYEhErX4kMrN93iaFq5v",
-		Private: "8b92199b665a1f23130f8a40dfc499d82859adf094ef957d17070890627858bb",
-		Public:  "03927e6938c23985fa6ade83a6a778e718552632ac298659d8f2a85dd8556a353a",
-		Wif:     "Bt1LZERbcwLpLTfDUWm4jnZpn4FrntqEgdVUjTqmidos4AMaB7Hj",
-	}
 
-	_, err := bcy.Faucet(faucet_addr, 1)
-	if err != nil {
-		fmt.Println(err)
-	}
+	/*
+		faucet_addr := gobcy.AddrKeychain{
+			Address: "CBzyZEAGmRaxmapYEhErX4kMrN93iaFq5v",
+			Private: "8b92199b665a1f23130f8a40dfc499d82859adf094ef957d17070890627858bb",
+			Public:  "03927e6938c23985fa6ade83a6a778e718552632ac298659d8f2a85dd8556a353a",
+			Wif:     "Bt1LZERbcwLpLTfDUWm4jnZpn4FrntqEgdVUjTqmidos4AMaB7Hj",
+		}
 
-	***************/
+		_, err := bcy.Faucet(faucet_addr, 10e6)
+		if err != nil {
+			fmt.Println(err)
+		}
+	*/
 
 	///****check balance****
-	addr, err := bcy.GetAddrBal(buyer_addr, nil)
+	addr, err := bcy.GetAddrBal(COMPANY_WALLET, nil)
 	if err != nil {
 		fmt.Println(err)
 	}
 	fmt.Printf("%+v\n", addr)
 
-	/*
-		//Post New TXSkeleton
-		skel, err := bcy.NewTX(gobcy.TempNewTX(faucet_use_addr, buyer_addr, *big.NewInt(190)), false)
-		if err != nil {
-			fmt.Println(err)
-		}
-		//Sign it locally
-		err = skel.Sign([]string{faucet_private})
-		if err != nil {
-			fmt.Println(err)
-		}
-		//Send TXSkeleton
-		skel, err = bcy.SendTX(skel)
-		if err != nil {
-			fmt.Println(err)
-		}
-		fmt.Printf("%+v\n", skel)
-	*/
+	//Post New TXSkeleton
+	skel, err := bcy.NewTX(gobcy.TempNewTX("asdasds", faucet_use_addr, *big.NewInt(1)), false)
+	if err != nil {
+		fmt.Println(err)
+	}
+	//Sign it locally
+	err = skel.Sign([]string{COMPANY_WALLET_MASTER_PRIVATE_KEY})
+	if err != nil {
+		fmt.Println(err)
+	}
+	//Send TXSkeleton
+	skel, err = bcy.SendTX(skel)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Printf("%+v\n", skel)
 
 	/*
 			wallet, _, xpri, err := create_hd_wallet(bcy, COMPANY_WALLET)
