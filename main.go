@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math/big"
 	"net/http"
+	"strings"
 
 	"github.com/blockcypher/gobcy"
 	"github.com/wemeetagain/go-hdwallet"
@@ -42,11 +43,11 @@ func main() {
 	*/
 
 	///****check balance****
-	addr, err := bcy.GetAddrBal(COMPANY_WALLET, nil)
+	addr, err := bcy.GetAddrBal(COMPANY_WALLET, map[string]string{"omitWalletAddresses": "true"})
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Printf("%+v\n", addr)
+	fmt.Printf("%+v\n", addr.FinalBalance)
 
 	//Post New TXSkeleton
 	skel, err := bcy.NewTX(gobcy.TempNewTX("asdasds", faucet_use_addr, *big.NewInt(1)), false)
@@ -161,13 +162,17 @@ func handlePurchase(bcy gobcy.API, writer http.ResponseWriter, request *http.Req
 
 }
 
-func CollectBalance(bcy gobcy.API) {
-	waAddr, err := bcy.GetAddrBal(COMPANY_WALLET, nil)
+func collect_all_balance_from_wallet(bcy gobcy.API, wallet_name string, token string, to_address string) {
+	body := strings.NewReader(`{"inputs":[{"wallet_name":"` + wallet_name + `", "wallet_token":"` + token + `"}], "outputs":[{"addresses": ["` + to_address + `"], "value": 1000000}]}`)
+	req, err := http.NewRequest("POST", "https://api.blockcypher.com/v1/bcy/test/txs/new", body)
 	if err != nil {
-		fmt.Println(err)
+		// handle err
 	}
-	fmt.Printf("%+v\n", waAddr.Balance)
-	//input:= {inputs:[{"wallet_name":COMPANY_WALLET, "wallet_token":BLOCKCYPHER_TOKEN}], value: waAddr.Balance.Int64()}
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
-	//bcy.NewTX()
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		// handle err
+	}
+	defer resp.Body.Close()
 }
