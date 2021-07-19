@@ -123,12 +123,23 @@ func create_hd_wallet(client gobcy.API, wallet_name string) (wallet gobcy.HDWall
 	return
 }
 
-func derive_payment_address_from_wallet(client gobcy.API, wallet_name string) (string, error) {
+func derive_payment_address_from_wallet_and_register_callback(client gobcy.API, wallet_name string) (string, error) {
 	derived_wallet, err := client.DeriveAddrHDWallet(wallet_name, map[string]string{"count": "1"})
 	if err != nil {
 		fmt.Println(err)
 	}
 	fmt.Printf("Parital HD Wallet: %+v\n", derived_wallet)
+	derived_addr := derived_wallet.Chains[0].ChainAddr[0].Address
+	derived_addr_pub := derived_wallet.Chains[0].ChainAddr[0].Public
+	_ = derived_addr_pub
+
+	//register callback
+	hook, err := client.CreateHook(gobcy.Hook{Event: "tx-confirmation", Address: derived_addr, Confirmations: 1, URL: "https://my.domain.com/callbacks/payments"})
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Printf("%+v\n", hook)
+
 	return "", nil
 
 }
