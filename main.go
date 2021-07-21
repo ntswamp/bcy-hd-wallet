@@ -1,104 +1,87 @@
 package main
 
 import (
+	"encoding/hex"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"math/big"
 	"net/http"
 	"strings"
 
 	"github.com/blockcypher/gobcy"
+	"github.com/btcsuite/btcutil/base58"
 	"github.com/wemeetagain/go-hdwallet"
 )
 
-var (
-	seller_addr = "CAidSjXaJEgXJhKvdQ6CE9qEMBkZCmtycC"
-	seller_pub  = "03381be444b91ca55d2ff7074e2d36650ea040e1bc1c05b9ea48ff39be57c95198"
-
-	buyer_addr = "C5yS3pPG2E5Wfx5uzx5ibWvZxX17uFe1dG"
-	buyer_pub  = "02079cff4199262f6bf8e1993b4fc2c65ab525a36c542940ee7e879adb2127bf01"
-
-	faucet_use_addr = "CBzyZEAGmRaxmapYEhErX4kMrN93iaFq5v"
-	faucet_private  = "8b92199b665a1f23130f8a40dfc499d82859adf094ef957d17070890627858bb"
-	faucet_public   = "03927e6938c23985fa6ade83a6a778e718552632ac298659d8f2a85dd8556a353a"
-	faucet_wif      = "Bt1LZERbcwLpLTfDUWm4jnZpn4FrntqEgdVUjTqmidos4AMaB7Hj"
-)
-
 func main() {
+	const (
+		seller_addr = "C8ZmNZQ6DZmg9ihHjoJwSqVgBsnuA6PYo5"
+		seller_pub  = "033d46ed2e247b5d7967b7f8f0c0bc121193dfe767910e8013940e5b45fb668424"
+
+		faucet_use_addr = "CBzyZEAGmRaxmapYEhErX4kMrN93iaFq5v"
+		faucet_private  = "8b92199b665a1f23130f8a40dfc499d82859adf094ef957d17070890627858bb"
+		faucet_public   = "03927e6938c23985fa6ade83a6a778e718552632ac298659d8f2a85dd8556a353a"
+		faucet_wif      = "Bt1LZERbcwLpLTfDUWm4jnZpn4FrntqEgdVUjTqmidos4AMaB7Hj"
+	)
 
 	//get blockchian client
 	bcy := gobcy.API{Token: BLOCKCYPHER_TOKEN, Coin: "bcy", Chain: "test"}
+	wallet, _ := bcy.GetAddrHDWallet(COMPANY_WALLET, nil)
+	fmt.Printf("Wallet: %+v\n", wallet)
 
-	/*
-		faucet_addr := gobcy.AddrKeychain{
-			Address: "CBzyZEAGmRaxmapYEhErX4kMrN93iaFq5v",
-			Private: "8b92199b665a1f23130f8a40dfc499d82859adf094ef957d17070890627858bb",
-			Public:  "03927e6938c23985fa6ade83a6a778e718552632ac298659d8f2a85dd8556a353a",
-			Wif:     "Bt1LZERbcwLpLTfDUWm4jnZpn4FrntqEgdVUjTqmidos4AMaB7Hj",
-		}
+	/*************FAUCET************
+	faucet_addr := gobcy.AddrKeychain{
+		Address: "CBzyZEAGmRaxmapYEhErX4kMrN93iaFq5v",
+		Private: "8b92199b665a1f23130f8a40dfc499d82859adf094ef957d17070890627858bb",
+		Public:  "03927e6938c23985fa6ade83a6a778e718552632ac298659d8f2a85dd8556a353a",
+		Wif:     "Bt1LZERbcwLpLTfDUWm4jnZpn4FrntqEgdVUjTqmidos4AMaB7Hj",
+	_, err := bcy.Faucet(faucet_addr, 10e6)
+	if err != nil {
+	fmt.Println(err)
 
-		_, err := bcy.Faucet(faucet_addr, 10e6)
-		if err != nil {
-			fmt.Println(err)
-		}
-	*/
 
-	///****check balance****
+	///****CHECK BALANCE***
 	addr, err := bcy.GetAddrBal(COMPANY_WALLET, map[string]string{"omitWalletAddresses": "true"})
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Printf("%+v\n", addr.FinalBalance)
+	fmt.Printf("%+v\n", addr.Balance.String())
 
-	//Post New TXSkeleton
-	skel, err := bcy.NewTX(gobcy.TempNewTX("asdasds", faucet_use_addr, *big.NewInt(1)), false)
+
+
+	//*****CREATE HD WALLET************************************************
+	w, pub, pri, _ := create_hd_wallet(bcy, COMPANY_WALLET)
+	println(pub, pri, w.ExtPubKey
+
+
+	//*****DERIVE ADDRESS********************************
+	derive_payment_address_from_wallet_and_register_callback(bcy, COMPANY_WALLET)
+
+
+	derive_payment_address_from_wallet_and_register_callback
+
+	//****** TX ************************
+
+
+
+	//***********list all wallets by token************
+	walletNames, _ := bcy.ListWallets()
+	fmt.Printf("Wallets:%v\n", walletNames)
+
+
+	//******GET hdwallet**************************
+	wallet, _ := bcy.GetAddrHDWallet(COMPANY_WALLET, nil)
+	fmt.Printf("Wallet: %+v\n", wallet)
+
+
+	//*****delete wallet**********
+	err := bcy.DeleteHDWallet(COMPANY_WALLET)
 	if err != nil {
 		fmt.Println(err)
+	} else {
+		fmt.Println("Wallet Deleted")
 	}
-	//Sign it locally
-	err = skel.Sign([]string{COMPANY_WALLET_MASTER_PRIVATE_KEY})
-	if err != nil {
-		fmt.Println(err)
-	}
-	//Send TXSkeleton
-	skel, err = bcy.SendTX(skel)
-	if err != nil {
-		fmt.Println(err)
-	}
-	fmt.Printf("%+v\n", skel)
-
-	/*
-			wallet, _, xpri, err := create_hd_wallet(bcy, COMPANY_WALLET)
-			if err != nil {
-				println(err.Error())
-			}
-
-			fmt.Printf("wallet created:%+v\n", wallet)
-			fmt.Printf("xpri:%+v\n", xpri)
-
-
-		//list all wallets by token
-		walletNames, _ := bcy.ListWallets()
-		fmt.Printf("Wallets:%v\n", walletNames)
-
-			//hdwallet
-			wallet, _ := bcy.GetAddrHDWallet(COMPANY_WALLET, nil)
-			fmt.Printf("Wallet: %+v\n", wallet)
-
-			derived_wallet, _ := bcy.DeriveAddrHDWallet(COMPANY_WALLET, map[string]string{"count": "1"})
-			fmt.Printf("Wallet: %+v\n", derived_wallet)
-
-		//hdwallet
-		wallet, _ := bcy.GetAddrHDWallet(COMPANY_WALLET, nil)
-		fmt.Printf("Wallet: %+v\n", wallet)
-
-
-			//delete wallet
-			err := bcy.DeleteHDWallet(COMPANY_WALLET)
-			if err != nil {
-				fmt.Println(err)
-			} else {
-				fmt.Println("Wallet Deleted")
-			}
 	*/
 
 }
@@ -120,11 +103,11 @@ func create_hd_wallet(client gobcy.API, wallet_name string) (wallet gobcy.HDWall
 	if err != nil {
 		return
 	}
-	fmt.Printf("HD Wallet created: %+v\nxPub key:%+v\n", wallet, xpub)
+	fmt.Printf("HD Wallet created: %+v\n", wallet)
 	return
 }
 
-func derive_payment_address_from_wallet_and_register_callback(client gobcy.API, wallet_name string) (string, error) {
+func derive_payment_address_from_wallet_and_register_callback(client gobcy.API, wallet_name string) string {
 	derived_wallet, err := client.DeriveAddrHDWallet(wallet_name, map[string]string{"count": "1"})
 	if err != nil {
 		fmt.Println(err)
@@ -141,10 +124,11 @@ func derive_payment_address_from_wallet_and_register_callback(client gobcy.API, 
 	}
 	fmt.Printf("%+v\n", hook)
 
-	return "", nil
+	return derived_addr
 
 }
 
+/*
 func handlePurchase(bcy gobcy.API, writer http.ResponseWriter, request *http.Request) {
 	query := request.URL.Query()
 
@@ -161,18 +145,62 @@ func handlePurchase(bcy gobcy.API, writer http.ResponseWriter, request *http.Req
 	}
 
 }
+*/
 
+//curl version of transfer from wallet
 func collect_all_balance_from_wallet(bcy gobcy.API, wallet_name string, token string, to_address string) {
-	body := strings.NewReader(`{"inputs":[{"wallet_name":"` + wallet_name + `", "wallet_token":"` + token + `"}], "outputs":[{"addresses": ["` + to_address + `"], "value": 1000000}]}`)
+	addr, err := bcy.GetAddrBal(COMPANY_WALLET, map[string]string{"omitWalletAddresses": "true"})
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Printf("%+v\n", addr.Balance.String())
+
+	param := `{"inputs":[{"wallet_name":"` + wallet_name + `", "wallet_token":"` + token + `"}], "outputs":[{"addresses": ["` + to_address + `"], "value": ` + addr.Balance.String() + `}]}`
+	println(param)
+	body := strings.NewReader(param)
 	req, err := http.NewRequest("POST", "https://api.blockcypher.com/v1/bcy/test/txs/new", body)
 	if err != nil {
 		// handle err
+		fmt.Println(err)
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		// handle err
+		fmt.Println(err)
 	}
+	var data map[string]interface{}
+	rbody, err := ioutil.ReadAll(resp.Body)
+	err = json.Unmarshal([]byte(rbody), &data)
+	fmt.Println(data)
 	defer resp.Body.Close()
+}
+
+func transfer_from_wallet(client gobcy.API, wallet_name string, to_address string, amount int64) {
+	//Post New TXSkeleton
+	input := gobcy.TXInput{WalletName: wallet_name}
+	output := gobcy.TXOutput{Addresses: []string{to_address}, Value: *big.NewInt(amount)}
+	tempTx := gobcy.TX{Inputs: []gobcy.TXInput{input}, Outputs: []gobcy.TXOutput{output}}
+
+	skel, err := client.NewTX(tempTx, false)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	//Sign it locally
+	prvkey, _ := hdwallet.StringChild(COMPANY_WALLET_MASTER_PRIVATE_KEY, 0)
+	base58_decoded := base58.Decode(prvkey)
+	hex_private_key := hex.EncodeToString(base58_decoded)
+	err = skel.Sign([]string{hex_private_key})
+	if err != nil {
+		fmt.Println(err)
+	}
+	//Send TXSkeleton
+	skel, err = client.SendTX(skel)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Printf("%+v\n", skel)
 }
