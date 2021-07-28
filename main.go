@@ -11,13 +11,14 @@ import (
 
 	"github.com/blockcypher/gobcy"
 	"github.com/btcsuite/btcutil/base58"
+	"github.com/btcsuite/btcutil/hdkeychain"
 	"github.com/wemeetagain/go-hdwallet"
 )
 
 func main() {
 	const (
-		seller_addr = "C8ZmNZQ6DZmg9ihHjoJwSqVgBsnuA6PYo5"
-		seller_pub  = "033d46ed2e247b5d7967b7f8f0c0bc121193dfe767910e8013940e5b45fb668424"
+		company_addr  = "C4zQmUHCZqZpz6meiiiyxLJ1R2eRLDXEMi"
+		company_addr2 = "C26eLLR6e26pik8XK8cR736ARbDXJLVdfC"
 
 		faucet_use_addr = "CBzyZEAGmRaxmapYEhErX4kMrN93iaFq5v"
 		faucet_private  = "8b92199b665a1f23130f8a40dfc499d82859adf094ef957d17070890627858bb"
@@ -26,9 +27,24 @@ func main() {
 	)
 
 	//get blockchian client
-	bcy := gobcy.API{Token: BLOCKCYPHER_TOKEN, Coin: "bcy", Chain: "test"}
-	wallet, _ := bcy.GetAddrHDWallet(COMPANY_WALLET, nil)
-	fmt.Printf("Wallet: %+v\n", wallet)
+	bcy := gobcy.API{Token: BLOCKCYPHER_TOKEN, Coin: "btc", Chain: "test3"}
+
+	w, pub, pri, _ := create_hd_wallet(bcy, COMPANY_WALLET)
+	println(pub, pri, w.ExtPubKey)
+
+	derived_wallet, err := bcy.DeriveAddrHDWallet(COMPANY_WALLET, map[string]string{"count": "1"})
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Printf("Parital HD Wallet: %+v\n", derived_wallet)
+
+	/*****delete wallet**********
+	err := bcy.DeleteHDWallet(COMPANY_WALLET)
+	if err != nil {
+		fmt.Println(err)
+	} else {
+		fmt.Println("Wallet Deleted")
+	}
 
 	/*************FAUCET************
 	faucet_addr := gobcy.AddrKeychain{
@@ -39,6 +55,22 @@ func main() {
 	_, err := bcy.Faucet(faucet_addr, 10e6)
 	if err != nil {
 	fmt.Println(err)
+
+	skel, err := bcy.NewTX(gobcy.TempNewTX(faucet_use_addr, company_addr2, *big.NewInt(2e5)), false)
+	if err != nil {
+		fmt.Println(err)
+	}
+	//Sign it locally
+	err = skel.Sign([]string{faucet_private})
+	if err != nil {
+		fmt.Println(err)
+	}
+	//Send TXSkeleton
+	skel, err = bcy.SendTX(skel)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Printf("%+v\n", skel)
 
 
 	///****CHECK BALANCE***
@@ -52,14 +84,29 @@ func main() {
 
 	//*****CREATE HD WALLET************************************************
 	w, pub, pri, _ := create_hd_wallet(bcy, COMPANY_WALLET)
-	println(pub, pri, w.ExtPubKey
+	println(pub, pri, w.ExtPubKey)
 
 
-	//*****DERIVE ADDRESS********************************
+	//*****DERIVE ADDRESS AND CALLBACK********************************
 	derive_payment_address_from_wallet_and_register_callback(bcy, COMPANY_WALLET)
 
+	//*****DERIVE ADDRESS********************************
+	derived_wallet, err := bcy.DeriveAddrHDWallet(COMPANY_WALLET, map[string]string{"count": "1"})
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Printf("Parital HD Wallet: %+v\n", derived_wallet)
 
-	derive_payment_address_from_wallet_and_register_callback
+
+	//************CREATE &&& DERIVE *****
+	w, pub, pri, _ := create_hd_wallet(bcy, COMPANY_WALLET)
+	println(pub, pri, w.ExtPubKey)
+
+	derived_wallet, err := bcy.DeriveAddrHDWallet(COMPANY_WALLET, map[string]string{"count": "1"})
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Printf("Parital HD Wallet: %+v\n", derived_wallet)
 
 	//****** TX ************************
 
@@ -74,30 +121,37 @@ func main() {
 	wallet, _ := bcy.GetAddrHDWallet(COMPANY_WALLET, nil)
 	fmt.Printf("Wallet: %+v\n", wallet)
 
-
-	//*****delete wallet**********
-	err := bcy.DeleteHDWallet(COMPANY_WALLET)
-	if err != nil {
-		fmt.Println(err)
-	} else {
-		fmt.Println("Wallet Deleted")
-	}
 	*/
 
 }
 
 // return xpub
 func create_hd_wallet(client gobcy.API, wallet_name string) (wallet gobcy.HDWallet, xpub string, xpri string, err error) {
-	// Generate a random 256 bit seed
-	seed, _ := hdwallet.GenSeed(256)
-	// Create a master private key
-	masterprv := hdwallet.MasterKey(seed)
-	// Convert master private key to public key
-	masterpub := masterprv.Pub()
 
-	//stringify xpub key
-	xpub = masterpub.String()
-	xpri = masterprv.String()
+	master := "xprv9s21ZrQH143K3QTDL4LXw2F7HEK3wJUD2nW2nRk4stbPy6cq3jP" +
+		"PqjiChkVvvNKmPGJxWUtg6LnF5kejMRNNU3TGtRBeJgk33yuGBxrMPHi"
+
+	// Start by getting an extended key instance for the master node.
+	// This gives the path:
+	//   m
+	masterKey, err := hdkeychain.NewKeyFromString(master)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	// Derive the extended key for account 0.  This gives the path:
+	//   m/0H
+	acct0, err := masterKey.Derive(hdkeychain.HardenedKeyStart + 0)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	pubkey, err := acct0.Neuter()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	xpub = pubkey.String()
 
 	wallet, err = client.CreateHDWallet(gobcy.HDWallet{Name: wallet_name, ExtPubKey: xpub})
 	if err != nil {
